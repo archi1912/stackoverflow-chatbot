@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot in Bootstrap Card</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0; /* Light background for the page */
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .chat-card {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .chat-header {
+      background-color: #6200ea;
+      color: #fff;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .chat-message {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    .message-bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      /* word-wrap: break-word; */
+    }
+    .user-message {
+      align-self: flex-end;
+      background-color: #6200ea;
+      color: #fff;
+      border-radius: 20px 20px 0 20px;
+    }
+    .bot-message {
+      align-self: flex-start;
+      background-color: #e0e0e0;
+      border-radius: 20px 20px 20px 0;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+      padding: 8px;
+      background-color: #f9f9f9;
+    }
+    .chat-input input {
+      flex: 1;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    .chat-input button {
+      background-color: #6200ea;
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+    .chat-input button:hover {
+      background-color: #3700b3;
+    }
+    .clear-button {
+      background-color: #f44336; /* Red color for Clear button */
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      padding: 8px 16px;
+      margin-left: 8px;
+    }
+    .clear-button:hover {
+      background-color: #c62828; /* Darker red for hover effect */
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div class="chat-card card">
+  <div class="card-body">
+    <div class="chat-header">
+      <div>Stackoverflow Chatbot</div>
+    </div>
+    <div class="chat-body" id="chat-body">
+      <!-- Messages will go here -->
+    </div>
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Type a message...">
+      <button id="send-button">Send</button>
+      <button id="clear-button" class="clear-button">Clear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://aae0-34-16-182-30.ngrok-free.app/generate";  
+
+  function appendMessage(message, messageType) {
+    const messageElement = $('<div class="chat-message"></div>');
+    messageElement.addClass(messageType);
+    messageElement.html(`<div class="message-bubble ${messageType}">${message}</div>`);
+    $('#chat-body').append(messageElement);
+    $('#chat-body').scrollTop($('#chat-body')[0].scrollHeight);  
+  }
+
+  function sendMessage() {
+    const inputField = document.getElementById('user-input');
+    const messageText = inputField.value.trim();
+    if (messageText === '') return;
+
+    appendMessage(messageText, 'user-message');
+    inputField.value = '';
+
+    $.ajax({
+      url: API_URL,
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ prompt: messageText }),
+      success: function(response) {
+        appendMessage(response.generated_text, 'bot-message');
+      },
+      error: function(error) {
+        console.error('Error:', error);
+        appendMessage('Error: Could not connect to server', 'bot-message');
+      }
+    });
+  }
+
+  function clearChat() {
+    const chatBody = document.getElementById('chat-body');
+    chatBody.innerHTML = ''; // Clear chat messages
+  }
+
+  // Add event listener for Enter key
+  document.getElementById('user-input').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent the default action (e.g., adding a newline)
+      sendMessage();
+    }
+  });
+
+  // Add event listener for Send button
+  document.getElementById('send-button').addEventListener('click', function() {
+    sendMessage();
+  });
+
+  // Add event listener for Clear button
+  document.getElementById('clear-button').addEventListener('click', function() {
+    clearChat();
+  });
+</script>
+
+</body>
+</html>
